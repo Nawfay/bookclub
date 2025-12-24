@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { fetchBooks, Book } from "@/lib/data2";
 import { Header } from "@/components/Header";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Navigation, BookCard, GlobalStats, Footer, SearchBooks } from "@/components/home";
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const filter = searchParams.get("filter") || "reading";
   const [books, setBooks] = useState<Book[]>([]);
@@ -99,5 +99,23 @@ export default function Home() {
         </main>
       </div>
     </ProtectedRoute>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <ProtectedRoute>
+        <div className="min-h-screen bg-white dark:bg-zinc-950">
+          <main className="max-w-xl mx-auto px-6 sm:px-4 py-16">
+            <div className="flex items-center justify-center py-12">
+              <div className="text-zinc-500 dark:text-zinc-400">Loading...</div>
+            </div>
+          </main>
+        </div>
+      </ProtectedRoute>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
