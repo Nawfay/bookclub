@@ -1,0 +1,237 @@
+/* Updated: 2025-12-22T19:54:44.746Z */
+/* Updated: 2025-12-17T21:03:07.429Z */
+/* Updated: 2025-12-17T21:02:56.068Z */
+/* Updated: 2025-12-13T02:47:23.458Z */
+/* Updated: 2025-12-13T02:22:18.225Z */
+/* Updated: 2025-12-13T02:21:35.886Z */
+/* Updated: 2025-12-12T18:27:39.539Z */
+/* Updated: 2025-12-12T18:20:29.753Z */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #18181B;
+
+  --color-card: #ffffff;
+  --color-card-foreground: #18181B;
+
+  --color-popover: #ffffff;
+  --color-popover-foreground: #18181B;
+
+  --color-primary: #18181B;
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #F4F4F5;
+  --color-secondary-foreground: #18181B;
+
+  --color-muted: #F4F4F5;
+  --color-muted-foreground: #71717A;
+
+  --color-accent: #F5F5F5;
+  --color-accent-foreground: #18181B;
+
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fafafa;
+
+  --color-border: #E4E4E7;
+  --color-input: #E4E4E7;
+  --color-ring: #18181B;
+
+  --color-chart-1: #e67e22;
+  --color-chart-2: #2d8659;
+  --color-chart-3: #1e3a5f;
+  --color-chart-4: #f1c40f;
+  --color-chart-5: #e74c3c;
+
+  --color-sidebar: #f7f7f7;
+  --color-sidebar-foreground: #404040;
+  --color-sidebar-primary: #1a1a1a;
+  --color-sidebar-primary-foreground: #fafafa;
+  --color-sidebar-accent: #f0f0f0;
+  --color-sidebar-accent-foreground: #1a1a1a;
+  --color-sidebar-border: #d4d4d8;
+  --color-sidebar-ring: #3b82f6;
+
+  --color-text-secondary: #71717A;
+  --color-text-tertiary: #A1A1AA;
+  --color-surface-hover: #F4F4F5;
+  --color-command-menu: #F5F5F5;
+  --color-kbd-background: #E8E8E8;
+  --color-kbd-border: #D4D4D4;
+
+  --font-sans: "Inter", sans-serif;
+  --font-serif: serif;
+
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+.dark {
+  --color-background: #09090B;
+  --color-foreground: #FAFAFA;
+
+  --color-card: #18181B;
+  --color-card-foreground: #FAFAFA;
+
+  --color-popover: #18181B;
+  --color-popover-foreground: #FAFAFA;
+
+  --color-primary: #FAFAFA;
+  --color-primary-foreground: #18181B;
+
+  --color-secondary: #27272A;
+  --color-secondary-foreground: #FAFAFA;
+
+  --color-muted: #27272A;
+  --color-muted-foreground: #A1A1AA;
+
+  --color-accent: #27272A;
+  --color-accent-foreground: #FAFAFA;
+
+  --color-border: #27272A;
+  --color-input: #27272A;
+  --color-ring: #D4D4D8;
+
+  --color-text-secondary: #A1A1AA;
+  --color-text-tertiary: #71717A;
+  --color-surface-hover: #27272A;
+  --color-kbd-background: #27272A;
+  --color-kbd-border: #3F3F46;
+}
+
+/*
+  The default border color has changed to currentColor in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border);
+  }
+}
+
+@layer utilities {
+  body {
+    font-family: var(--font-sans);
+  }
+}
+
+@layer base {
+  :root {
+    --background: var(--color-background);
+    --foreground: var(--color-foreground);
+    --card: var(--color-card);
+    --card-foreground: var(--color-card-foreground);
+    --popover: var(--color-popover);
+    --popover-foreground: var(--color-popover-foreground);
+    --primary: var(--color-primary);
+    --primary-foreground: var(--color-primary-foreground);
+    --secondary: var(--color-secondary);
+    --secondary-foreground: var(--color-secondary-foreground);
+    --muted: var(--color-muted);
+    --muted-foreground: var(--color-muted-foreground);
+    --accent: var(--color-accent);
+    --accent-foreground: var(--color-accent-foreground);
+    --destructive: var(--color-destructive);
+    --destructive-foreground: var(--color-destructive-foreground);
+    --border: var(--color-border);
+    --input: var(--color-input);
+    --ring: var(--color-ring);
+    --chart-1: var(--color-chart-1);
+    --chart-2: var(--color-chart-2);
+    --chart-3: var(--color-chart-3);
+    --chart-4: var(--color-chart-4);
+    --chart-5: var(--color-chart-5);
+    --radius: 0.5rem;
+    --sidebar-background: var(--color-sidebar);
+    --sidebar-foreground: var(--color-sidebar-foreground);
+    --sidebar-primary: var(--color-sidebar-primary);
+    --sidebar-primary-foreground: var(--color-sidebar-primary-foreground);
+    --sidebar-accent: var(--color-sidebar-accent);
+    --sidebar-accent-foreground: var(--color-sidebar-accent-foreground);
+    --sidebar-border: var(--color-sidebar-border);
+    --sidebar-ring: var(--color-sidebar-ring);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  html {
+    font-family: var(--font-sans);
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .header-title {
+    color: var(--color-primary);
+  }
+
+  .footer-line-color {
+    color: var(--color-text-secondary);
+  }
+
+  kbd {
+    background-color: var(--color-kbd-background);
+    border: 1px solid var(--color-kbd-border);
+    padding: 4px 6px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary);
+  }
+}
