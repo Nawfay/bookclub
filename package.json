@@ -67,6 +67,7 @@
         "framer-motion": "^12.23.24",
         "input-otp": "^1.4.2",
         "lucide-react": "^0.552.0",
+        "magic-string": "^0.30.21",
         "mini-svg-data-uri": "^1.4.4",
         "motion": "^12.23.24",
         "motion-dom": "^12.23.23",
