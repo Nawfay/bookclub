@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Note } from "@/lib/read";
+import pb from "@/lib/pocketbase";
 
 interface NoteCardProps {
   note: Note;
@@ -8,7 +9,8 @@ interface NoteCardProps {
 
 export function NoteCard({ note, bookId }: NoteCardProps) {
   const userName = note.expand?.user?.name || 'Unknown User';
-  const userInitial = userName.charAt(0).toUpperCase();
+  const user = note.expand?.user;
+  const userAvatar = user?.avatar ? pb.files.getURL(user, user.avatar) : `https://api.dicebear.com/9.x/thumbs/svg?seed=${userName}`;
   
   return (
     <Link 
@@ -16,9 +18,11 @@ export function NoteCard({ note, bookId }: NoteCardProps) {
       className="block py-4 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors -mx-4 px-4"
     >
       <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-600 dark:text-zinc-400">
-          {userInitial}
-        </div>
+        <img
+          src={userAvatar}
+          alt={userName}
+          className="w-8 h-8 rounded-full object-cover"
+        />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{userName}</span>
