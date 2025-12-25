@@ -19,19 +19,19 @@ export interface Member {
   readingSession: ReadingSession;
 }
 
-export type SessionStatus = 'active' | 'completed' | 'dropped' | 'planned' | 'uninitialized';
+export type SessionStatus = 'active' | 'completed' | 'uninitialized';
 
 export interface BookSession {
   id: string;
   status: SessionStatus | string;
   currentPage: number;
   targetPage: number;
-  readingPacePerDay: number;
+  chapter: string;
   estimatedEndDate: string; // ISO Date string
 }
 
 // You can use a Union type for status if you have a fixed set of states
-export type BookStatus = 'reading' | 'completed' | 'to-read'; 
+export type BookStatus = 'reading' | 'completed' | 'planned' | 'dropped'; 
 
 export interface Book {
   id: string;
@@ -90,7 +90,7 @@ export async function fetchBooks(): Promise<Book[]> {
           status: (sessionRecord.status as SessionStatus) || 'active',
           currentPage: sessionRecord.currentPage,
           targetPage: sessionRecord.targetPage,
-          readingPacePerDay: sessionRecord.readingPacePerDay,
+          chapter: sessionRecord.chapter || '',
           estimatedEndDate: sessionRecord.estimatedEndDate,
       } : {
           // Default fallback if no session exists yet
@@ -98,7 +98,7 @@ export async function fetchBooks(): Promise<Book[]> {
           status: 'uninitialized',
           currentPage: 0,
           targetPage: record.totalPages,
-          readingPacePerDay: 0,
+          chapter: '',
           estimatedEndDate: new Date().toISOString(),
       };
 
@@ -135,7 +135,7 @@ export async function fetchBooks(): Promise<Book[]> {
         author: record.author,
         cover: cover, 
         totalPages: record.totalPages,
-        status: (record.status as BookStatus) || 'to-read',
+        status: (record.status as BookStatus) || 'planned',
         bookSession: bookSession,
         members: members,
       };
@@ -169,7 +169,7 @@ export async function fetchBookById(bookId: string): Promise<Book | null> {
       status: (sessionRecord.status as SessionStatus) || 'active',
       currentPage: sessionRecord.currentPage,
       targetPage: sessionRecord.targetPage,
-      readingPacePerDay: sessionRecord.readingPacePerDay,
+      chapter: sessionRecord.chapter || '',
       estimatedEndDate: sessionRecord.estimatedEndDate,
     } : {
       // Default fallback if no session exists yet
@@ -177,7 +177,7 @@ export async function fetchBookById(bookId: string): Promise<Book | null> {
       status: 'uninitialized',
       currentPage: 0,
       targetPage: bookRecord.totalPages,
-      readingPacePerDay: 0,
+      chapter: '',
       estimatedEndDate: new Date().toISOString(),
     };
 
@@ -215,7 +215,7 @@ export async function fetchBookById(bookId: string): Promise<Book | null> {
       cover: bookRecord.coverImageUrl || 
         (bookRecord.cover ? pb.files.getURL(bookRecord, bookRecord.cover) : ""), 
       totalPages: bookRecord.totalPages,
-      status: (bookRecord.status as BookStatus) || 'to-read',
+      status: (bookRecord.status as BookStatus) || 'planned',
       bookSession: bookSession,
       members: members,
     };

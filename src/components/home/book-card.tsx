@@ -42,6 +42,11 @@ const avgProgress = book.members.length > 0
                   <h3 className="text-[15px] text-zinc-900 dark:text-zinc-100 font-medium group-hover:underline underline-offset-4 decoration-zinc-400">
                     {book.title}
                   </h3>
+                  {book.status === 'dropped' && (
+                    <span className="text-xs px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full font-medium">
+                      Dropped
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">{book.author}</p>
               </div>

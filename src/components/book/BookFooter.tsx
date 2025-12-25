@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MoreHorizontal, Trash2 } from "lucide-react";
-import { canViewSuper } from "@/lib/auth";
+import { canViewAdmin } from "@/lib/auth";
 import pb from "@/lib/pocketbase";
 
 interface BookFooterProps {
@@ -15,7 +15,7 @@ export function BookFooter({ bookId, bookTitle }: BookFooterProps) {
   const router = useRouter();
   const [showDeleteMenu, setShowDeleteMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const isSuperUser = canViewSuper();
+  const isAdminUser = canViewAdmin();
 
   const handleDeleteBook = async () => {
     if (!confirm(`Are you sure you want to delete "${bookTitle}"? This action cannot be undone.`)) {
@@ -60,8 +60,8 @@ export function BookFooter({ bookId, bookTitle }: BookFooterProps) {
           Notes are sorted by page number to avoid spoilers.
         </p>
         
-        {/* Super user menu */}
-        {isSuperUser && (
+        {/* admin user menu */}
+        {isAdminUser && (
           <div className="relative">
             <button
               onClick={(e) => {

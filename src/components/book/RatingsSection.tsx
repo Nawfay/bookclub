@@ -21,7 +21,7 @@ export function RatingsSection({ book, currentUserId, bookId }: RatingsSectionPr
 
   // Handle null case
   if (!book) return null
-  if (book.status !== "completed") return null;
+  if (book.status !== "completed" && book.status !== "dropped") return null;
 
   // Get members who have rated the book
   const ratedMembers = book.members.filter(member => member.readingSession.rating > 0);

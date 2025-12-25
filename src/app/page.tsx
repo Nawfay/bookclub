@@ -48,8 +48,8 @@ function HomeContent() {
   }
   
   const currentlyReading = books.filter((b: Book) => b.status === "reading");
-  const completed = books.filter((b: Book) => b.status === "completed");
-  const planned = books.filter((b: Book) => b.status === "planned" || b.status === "to-read");
+  const completed = books.filter((b: Book) => b.status === "completed" || b.status === "dropped");
+  const planned = books.filter((b: Book) => b.status === "planned" );
 
   return (
     <ProtectedRoute>

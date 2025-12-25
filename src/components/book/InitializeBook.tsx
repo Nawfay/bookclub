@@ -103,7 +103,7 @@ export function InitializeBook({ book, onInitialized }: InitializeBookProps) {
           status: 'active',
           currentPage: 0,
           targetPage: parseInt(totalPages) || book.totalPages,
-          readingPacePerDay: 0,
+          chapter: '0',
           estimatedEndDate: new Date().toISOString()
         });
       }

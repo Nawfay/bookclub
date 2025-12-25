@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, BookOpen, User, Calendar, Search } from 'lucide-react';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 export default function TestBooksPage() {
   const [books, setBooks] = useState<Book[]>([]);
@@ -125,7 +126,8 @@ export default function TestBooksPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Books Test Page</h1>
@@ -192,7 +194,7 @@ export default function TestBooksPage() {
                       <p><strong>Status:</strong> {singleBook.bookSession.status}</p>
                       <p><strong>Current Page:</strong> {singleBook.bookSession.currentPage}</p>
                       <p><strong>Target Page:</strong> {singleBook.bookSession.targetPage}</p>
-                      <p><strong>Reading Pace:</strong> {singleBook.bookSession.readingPacePerDay} pages/day</p>
+                      <p><strong>Chapter:</strong> {singleBook.bookSession.chapter}</p>
                       <p><strong>Members:</strong> {singleBook.members.length}</p>
                     </div>
                   </div>
@@ -377,8 +379,8 @@ export default function TestBooksPage() {
                           <span>{book.bookSession.targetPage}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Reading Pace:</span>
-                          <span>{book.bookSession.readingPacePerDay} pages/day</span>
+                          <span>Chapter:</span>
+                          <span>{book.bookSession.chapter || 'Not set'}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Status:</span>
@@ -440,6 +442,7 @@ export default function TestBooksPage() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

@@ -14,7 +14,7 @@ interface BookSessionUpdateDialogProps {
 export function BookSessionUpdateDialog({ isOpen, onClose, book }: BookSessionUpdateDialogProps) {
   const [currentPage, setCurrentPage] = useState("");
   const [targetPage, setTargetPage] = useState("");
-  const [readingPacePerDay, setReadingPacePerDay] = useState("");
+  const [chapter, setChapter] = useState("");
   const [estimatedEndDate, setEstimatedEndDate] = useState("");
   const [status, setStatus] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
@@ -23,7 +23,7 @@ export function BookSessionUpdateDialog({ isOpen, onClose, book }: BookSessionUp
 
   const handleUpdateSession = async () => {
     // Must update at least one field
-    if (!currentPage && !targetPage && !readingPacePerDay && !estimatedEndDate && !status) return;
+    if (!currentPage && !targetPage && !chapter && !estimatedEndDate && !status) return;
     
     setIsUpdating(true);
     
@@ -45,11 +45,8 @@ export function BookSessionUpdateDialog({ isOpen, onClose, book }: BookSessionUp
         }
       }
 
-      if (readingPacePerDay) {
-        const pace = parseInt(readingPacePerDay);
-        if (pace > 0) {
-          updateData.readingPacePerDay = pace;
-        }
+      if (chapter) {
+        updateData.chapter = chapter;
       }
 
       if (estimatedEndDate) {
@@ -67,7 +64,7 @@ export function BookSessionUpdateDialog({ isOpen, onClose, book }: BookSessionUp
         onClose();
         setCurrentPage("");
         setTargetPage("");
-        setReadingPacePerDay("");
+        setChapter("");
         setEstimatedEndDate("");
         setStatus("");
         
@@ -125,13 +122,12 @@ export function BookSessionUpdateDialog({ isOpen, onClose, book }: BookSessionUp
           </div>
 
           <div>
-            <label className="block text-sm text-zinc-700 dark:text-zinc-300 mb-2">Reading Pace (pages/day)</label>
+            <label className="block text-sm text-zinc-700 dark:text-zinc-300 mb-2">Chapter</label>
             <input
-              type="number"
-              value={readingPacePerDay}
-              onChange={(e) => setReadingPacePerDay(e.target.value)}
-              placeholder={bookSession.readingPacePerDay.toString()}
-              min="1"
+              type="text"
+              value={chapter}
+              onChange={(e) => setChapter(e.target.value)}
+              placeholder={bookSession.chapter || 'Enter chapter name'}
               className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
             />
           </div>
@@ -157,15 +153,13 @@ export function BookSessionUpdateDialog({ isOpen, onClose, book }: BookSessionUp
               <option value="">Keep current ({bookSession.status})</option>
               <option value="active">Active</option>
               <option value="completed">Completed</option>
-              <option value="dropped">Dropped</option>
-              <option value="planned">Planned</option>
             </select>
           </div>
         </div>
 
         <button
           onClick={handleUpdateSession}
-          disabled={isUpdating || (!currentPage && !targetPage && !readingPacePerDay && !estimatedEndDate && !status)}
+          disabled={isUpdating || (!currentPage && !targetPage && !chapter && !estimatedEndDate && !status)}
           className="w-full mt-6 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-sm rounded hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50"
         >
           {isUpdating ? "Updating..." : "Update Session"}

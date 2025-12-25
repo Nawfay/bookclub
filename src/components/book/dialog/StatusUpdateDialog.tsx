@@ -23,10 +23,10 @@ export function StatusUpdateDialog({ isOpen, onClose, book, currentUserId }: Sta
   const currentUser = book.members.find(member => member.id === currentUserId);
 
   const statusOptions: { value: BookStatus; label: string; description: string }[] = [
-    { value: 'reading', label: 'Currently Reading', description: 'Actively reading this book' },
-    { value: 'completed', label: 'Completed', description: 'Finished reading this book' },
-    { value: 'planned', label: 'Want to Read', description: 'Planning to read this book' },
-    { value: 'dropped', label: 'Dropped', description: 'Stopped reading this book' },
+{ value: 'reading', label: 'Currently Reading', description: 'The club is actively reading this book' },
+    { value: 'completed', label: 'Completed', description: 'The club has finished reading this book' },
+    { value: 'planned', label: 'Want to Read', description: 'The club is planning to read this book' },
+    { value: 'dropped', label: 'Dropped', description: 'The club stopped reading this book' },
   ];
 
   const handleUpdateStatus = async () => {
@@ -58,7 +58,7 @@ export function StatusUpdateDialog({ isOpen, onClose, book, currentUserId }: Sta
     <div className="fixed inset-0 bg-black/20 dark:bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl p-6 max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Update Reading Status</h3>
+          <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Update Book Status</h3>
           <button onClick={onClose} className="text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300">
             <X size={18} />
           </button>

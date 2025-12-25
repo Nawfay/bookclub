@@ -22,7 +22,7 @@ export function MemberProgress({ book }: MemberProgressProps) {
     ));
   };
 
-  if (book.status == "completed") {
+  if (book.status == "completed" || book.status == "dropped") {
     // Show reviews for completed books
     const membersWithReviews = book.members.filter(member => 
       (member.readingSession.review && member.readingSession.review.trim().length > 0) ||
