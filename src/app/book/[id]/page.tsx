@@ -1,7 +1,6 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
-import { getBook } from "@/lib/data";
 import { fetchBookById, Book as NewBook, isBookUninitialized } from "@/lib/data2";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/Header";
@@ -143,7 +142,7 @@ export default function BookPage({ params }: { params: Promise<{ id: string }> }
 
           <MemberProgress book={fetchedBook} />
 
-          {/* <NotesSection book={book} bookId={id} /> */}
+          <NotesSection bookId={id} />
 
           <BookFooter bookId={fetchedBook.id} bookTitle={fetchedBook.title} />
 

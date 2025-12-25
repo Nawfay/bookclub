@@ -1,57 +1,165 @@
 "use client";
 
-import Link from "next/link";
-import { MessageSquare } from "lucide-react";
-import { Book, Note } from "@/lib/data";
+import { useState, useEffect, useCallback } from "react";
+import { MessageSquare, Loader2, Search, X } from "lucide-react";
+import { fetchBookNotes, searchNotes, NotesResponse } from "@/lib/read";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { NoteCard } from "./notes/NoteCard";
+import { NotesPagination } from "./notes/NotesPagination";
 
 interface NotesSectionProps {
-  book: Book;
   bookId: string;
 }
 
-function NoteCard({ note, bookId }: { note: Note; bookId: string }) {
-  return (
-    <Link 
-      href={`/book/${bookId}/read?note=${note.id}`}
-      className="block py-4 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors -mx-4 px-4"
-    >
-      <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-600 dark:text-zinc-400">
-          {note.memberName.charAt(0)}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{note.memberName}</span>
-            <span className="text-xs text-zinc-400 dark:text-zinc-500">p. {note.page}</span>
-          </div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{note.content}</p>
-          <span className="text-xs text-zinc-400 dark:text-zinc-500 mt-2 block">{note.createdAt}</span>
-        </div>
-      </div>
-    </Link>
-  );
-}
+export function NotesSection({ bookId }: NotesSectionProps) {
+  const [notesData, setNotesData] = useState<NotesResponse | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  
+  const isMobile = useIsMobile();
+  const perPage = isMobile ? 7 : 10;
 
-export function NotesSection({ book, bookId }: NotesSectionProps) {
-  const sortedNotes = [...book.notes].sort((a, b) => a.page - b.page);
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const loadNotes = useCallback(async (page: number, searchQuery: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      let data;
+      if (searchQuery.trim()) {
+        data = await searchNotes(bookId, searchQuery.trim(), page, perPage);
+      } else {
+        data = await fetchBookNotes(bookId, page, perPage);
+      }
+      
+      if (data) {
+        setNotesData(data);
+      } else {
+        setError('Failed to load notes');
+      }
+    } catch (err) {
+      setError('An error occurred while loading notes');
+      console.error('Error loading notes:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [bookId, perPage]);
+
+  useEffect(() => {
+    loadNotes(currentPage, debouncedSearchTerm);
+  }, [loadNotes, currentPage, debouncedSearchTerm]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && notesData && newPage <= notesData.totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setCurrentPage(1);
+  };
+
+  if (loading) {
+    return (
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <MessageSquare size={14} className="text-zinc-400 dark:text-zinc-500" />
+          <h2 className="text-xs text-zinc-400 dark:text-zinc-600 uppercase tracking-wide">
+            Notes
+          </h2>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <MessageSquare size={14} className="text-zinc-400 dark:text-zinc-500" />
+          <h2 className="text-xs text-zinc-400 dark:text-zinc-600 uppercase tracking-wide">
+            Notes
+          </h2>
+        </div>
+        <div className="text-sm text-red-500 py-8 text-center">
+          {error}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section>
       <div className="flex items-center gap-2 mb-4">
         <MessageSquare size={14} className="text-zinc-400 dark:text-zinc-500" />
         <h2 className="text-xs text-zinc-400 dark:text-zinc-600 uppercase tracking-wide">
-          Notes ({book.notes.length})
+          Notes ({notesData?.totalItems || 0})
         </h2>
       </div>
 
-      {sortedNotes.length > 0 ? (
-        <div className="flex flex-col">
-          {sortedNotes.map((note) => (
-            <NoteCard key={note.id} note={note} bookId={bookId} />
-          ))}
+      {/* Search Input */}
+      <div className="relative mb-4">
+        <div className="relative">
+          <Search 
+            size={16} 
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 dark:text-zinc-500" 
+          />
+          <input
+            type="text"
+            placeholder="Search notes..."
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="w-full pl-10 pr-10 py-3 text-sm bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 focus:border-transparent text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 transition-all duration-200"
+          />
+          {searchTerm && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+            >
+              <X size={16} />
+            </button>
+          )}
         </div>
+      </div>
+
+      {notesData && notesData.items.length > 0 ? (
+        <>
+          <div className="flex flex-col">
+            {notesData.items.map((note) => (
+              <NoteCard key={note.id} note={note} bookId={bookId} />
+            ))}
+          </div>
+          
+          <NotesPagination 
+            notesData={notesData}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+          />
+        </>
       ) : (
-        <p className="text-sm text-zinc-400 dark:text-zinc-500 py-8 text-center">No notes yet for this book.</p>
+        <p className="text-sm text-zinc-400 dark:text-zinc-500 py-8 text-center">
+          {debouncedSearchTerm ? `No notes found for "${debouncedSearchTerm}"` : "No notes yet for this book."}
+        </p>
       )}
     </section>
   );
