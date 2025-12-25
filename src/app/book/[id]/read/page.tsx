@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { fetchBookById, Book } from "@/lib/data2";
 import { fetchBookContent, fetchNotesByPage, BookContent, Note } from "@/lib/read";
 import pb from "@/lib/pocketbase";
@@ -13,12 +13,12 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 export default function ReadPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const router = useRouter();
   const searchParams = useSearchParams();
   
   // Get the current page from URL, default to 1
   const pageParam = searchParams.get("page") || "1";
   const currentPage = Math.max(1, parseInt(pageParam, 10) || 1);
+  const noteParam = searchParams.get("note");
   
   // Debug: log the page parsing
   console.log('Page param:', pageParam, 'Current page:', currentPage);
@@ -57,10 +57,16 @@ export default function ReadPage({ params }: { params: Promise<{ id: string }> }
     loadBook();
   }, [id]);
 
-  // Fetch book content for current page
+  // Check if this is the special unmatched notes page
+  const isUnmatchedPage = currentPage === 999;
+
+  // Fetch book content for current page (skip for page 999)
   useEffect(() => {
     async function loadContent() {
-      if (!book) return;
+      if (!book || isUnmatchedPage) {
+        setContentLoading(false);
+        return;
+      }
       
       setContentLoading(true);
       setContentError(null);
@@ -81,7 +87,7 @@ export default function ReadPage({ params }: { params: Promise<{ id: string }> }
     }
     
     loadContent();
-  }, [id, currentPage, book]);
+  }, [id, currentPage, book, isUnmatchedPage]);
 
   // Fetch notes for current page
   useEffect(() => {
@@ -102,6 +108,24 @@ export default function ReadPage({ params }: { params: Promise<{ id: string }> }
     
     loadNotes();
   }, [id, currentPage, book]);
+
+  // Scroll to note if note param is present
+  useEffect(() => {
+    if (noteParam && pageNotes.length > 0 && !notesLoading) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        const noteElement = document.getElementById(`note-${noteParam}`);
+        if (noteElement) {
+          noteElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Add a brief highlight effect
+          noteElement.classList.add('ring-2', 'ring-zinc-400', 'dark:ring-zinc-500');
+          setTimeout(() => {
+            noteElement.classList.remove('ring-2', 'ring-zinc-400', 'dark:ring-zinc-500');
+          }, 2000);
+        }
+      }, 100);
+    }
+  }, [noteParam, pageNotes, notesLoading]);
 
   // Color palette for different users - muted pastels for dark mode
   const highlightColors = [
@@ -221,7 +245,7 @@ export default function ReadPage({ params }: { params: Promise<{ id: string }> }
               <div className="flex items-center gap-2">
                 <BookIcon size={14} className="text-zinc-400 dark:text-zinc-500" />
                 <h2 className="text-xs text-zinc-400 dark:text-zinc-600 uppercase tracking-wide">
-                  Page {currentPage}
+                  {isUnmatchedPage ? "Unmatched Notes" : `Page ${currentPage}`}
                 </h2>
               </div>
               
@@ -233,57 +257,75 @@ export default function ReadPage({ params }: { params: Promise<{ id: string }> }
               )}
             </div>
 
-            <div className="prose prose-sm max-w-none min-h-[300px]">
-              {contentLoading ? (
-                // Loading Skeleton
-                <div className="space-y-4 animate-pulse mt-8">
-                  <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-full"></div>
-                  <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-[95%]"></div>
-                  <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-[98%]"></div>
-                  <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-[90%]"></div>
-                  <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-[60%]"></div>
-                  <br />
-                  <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-full"></div>
-                  <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-[85%]"></div>
-                </div>
-              ) : contentError ? (
-                // Error State
-                <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-lg flex items-start gap-3 text-red-600 dark:text-red-400">
-                  <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                  <div className="text-sm">
-                    <p className="font-medium">Could not load page content</p>
-                    <p className="opacity-80 mt-1">{contentError}</p>
-                  </div>
-                </div>
-              ) : bookContent && bookContent.content.length > 0 ? (
-                // Actual Content with Highlights
-                (() => {
-                  const highlightedParagraphs = highlightText(bookContent.content);
-                  return highlightedParagraphs.map((paragraph, index) => (
-                    <p 
-                      key={index} 
-                      className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4"
-                      dangerouslySetInnerHTML={{ __html: paragraph }}
-                    />
-                  ));
-                })()
-              ) : (
-                // Empty State
-                <div className="text-center py-12">
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">
-                    No text found on this page.
+            {isUnmatchedPage ? (
+              // Unmatched Notes Page - just show notes, no book content
+              <div>
+                <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-lg mb-6">
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    These notes couldn't be matched to a specific page in the book.
                   </p>
                 </div>
-              )}
-            </div>
+                
+                {pageNotes.length === 0 && !notesLoading && (
+                  <div className="text-center py-12">
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">
+                      No unmatched notes found.
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Regular Page Content
+              <div className="prose prose-sm max-w-none min-h-[300px]">
+                {contentLoading ? (
+                  <div className="space-y-4 animate-pulse mt-8">
+                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-full"></div>
+                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-[95%]"></div>
+                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-[98%]"></div>
+                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-[90%]"></div>
+                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-[60%]"></div>
+                    <br />
+                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-full"></div>
+                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-[85%]"></div>
+                  </div>
+                ) : contentError ? (
+                  <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-lg flex items-start gap-3 text-red-600 dark:text-red-400">
+                    <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="font-medium">Could not load page content</p>
+                      <p className="opacity-80 mt-1">{contentError}</p>
+                    </div>
+                  </div>
+                ) : bookContent && bookContent.content.length > 0 ? (
+                  (() => {
+                    const highlightedParagraphs = highlightText(bookContent.content);
+                    return highlightedParagraphs.map((paragraph, index) => (
+                      <p 
+                        key={index} 
+                        className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4"
+                        dangerouslySetInnerHTML={{ __html: paragraph }}
+                      />
+                    ));
+                  })()
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">
+                      No text found on this page.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
             
             {/* Notes for this page */}
             {pageNotes.length > 0 && (
-              <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800">
-                <h3 className="text-xs text-zinc-400 dark:text-zinc-600 uppercase tracking-wide mb-4 flex items-center gap-2">
-                  <MessageSquare size={12} />
-                  Notes on this page
-                </h3>
+              <div className={isUnmatchedPage ? "" : "mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800"}>
+                {!isUnmatchedPage && (
+                  <h3 className="text-xs text-zinc-400 dark:text-zinc-600 uppercase tracking-wide mb-4 flex items-center gap-2">
+                    <MessageSquare size={12} />
+                    Notes on this page
+                  </h3>
+                )}
                 <div className="space-y-3">
                   {pageNotes.map((note) => {
                     const user = note.expand?.user;

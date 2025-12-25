@@ -14,7 +14,7 @@ export function NoteCard({ note, bookId }: NoteCardProps) {
   
   return (
     <Link 
-      href={`/book/${bookId}/read?page=${note.page}`}
+      href={`/book/${bookId}/read?page=${note.page}&note=${note.id}`}
       className="block py-4 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors -mx-4 px-4"
     >
       <div className="flex items-start gap-3">
