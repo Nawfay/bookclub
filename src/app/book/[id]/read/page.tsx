@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { fetchBookById, Book } from "@/lib/data2";
 import { fetchBookContent, fetchNotesByPage, BookContent, Note } from "@/lib/read";
+import pb from "@/lib/pocketbase";
 import { ArrowLeft, Book as BookIcon, ChevronLeft, ChevronRight, AlertCircle, MessageSquare } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/Header";
@@ -102,6 +103,27 @@ export default function ReadPage({ params }: { params: Promise<{ id: string }> }
     loadNotes();
   }, [id, currentPage, book]);
 
+  // Color palette for different users - muted pastels for dark mode
+  const highlightColors = [
+    { bg: 'bg-yellow-200', dark: 'bg-amber-900/30', hover: 'hover:bg-yellow-300', darkHover: 'dark:hover:bg-amber-900/50', noteBg: 'bg-yellow-100', noteDark: 'bg-amber-950/40' },
+    { bg: 'bg-blue-200', dark: 'bg-sky-900/30', hover: 'hover:bg-blue-300', darkHover: 'dark:hover:bg-sky-900/50', noteBg: 'bg-blue-100', noteDark: 'bg-sky-950/40' },
+    { bg: 'bg-green-200', dark: 'bg-emerald-900/30', hover: 'hover:bg-green-300', darkHover: 'dark:hover:bg-emerald-900/50', noteBg: 'bg-green-100', noteDark: 'bg-emerald-950/40' },
+    { bg: 'bg-pink-200', dark: 'bg-rose-900/30', hover: 'hover:bg-pink-300', darkHover: 'dark:hover:bg-rose-900/50', noteBg: 'bg-pink-100', noteDark: 'bg-rose-950/40' },
+    { bg: 'bg-purple-200', dark: 'bg-violet-900/30', hover: 'hover:bg-purple-300', darkHover: 'dark:hover:bg-violet-900/50', noteBg: 'bg-purple-100', noteDark: 'bg-violet-950/40' },
+    { bg: 'bg-orange-200', dark: 'bg-orange-900/30', hover: 'hover:bg-orange-300', darkHover: 'dark:hover:bg-orange-900/50', noteBg: 'bg-orange-100', noteDark: 'bg-orange-950/40' },
+  ];
+
+  // Generate consistent color based on user ID - uses last few chars which are most unique in PocketBase IDs
+  const getUserColor = (userId: string) => {
+    // PocketBase IDs are like "abc123xyz" - use last 4 chars for better distribution
+    const lastChars = userId.slice(-4);
+    let sum = 0;
+    for (let i = 0; i < lastChars.length; i++) {
+      sum += lastChars.charCodeAt(i) * (i + 1);
+    }
+    return highlightColors[sum % highlightColors.length];
+  };
+
   // Function to highlight text based on notes
   const highlightText = (allContent: string[]) => {
     if (pageNotes.length === 0) return allContent;
@@ -113,13 +135,14 @@ export default function ReadPage({ params }: { params: Promise<{ id: string }> }
     pageNotes.forEach((note) => {
       if (note.bookText && note.bookText.trim()) {
         const noteText = note.bookText.trim();
+        const color = getUserColor(note.user);
         
         // Simple approach: try exact match first
         let regex = new RegExp(`(${noteText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
         
         if (result.match(regex)) {
           result = result.replace(regex, (match) => {
-            return `<mark class="bg-yellow-200 dark:bg-yellow-800/50 px-1 rounded cursor-pointer" data-note-id="${note.id}" title="${note.note}">${match}</mark>`;
+            return `<mark class="${color.bg} dark:${color.dark} px-1 rounded cursor-pointer ${color.hover} ${color.darkHover} transition-colors" data-note-id="${note.id}" onclick="document.getElementById('note-${note.id}')?.scrollIntoView({ behavior: 'smooth', block: 'center' })">${match}</mark>`;
           });
         } else {
           // If exact match fails, try flexible word matching
@@ -142,7 +165,7 @@ export default function ReadPage({ params }: { params: Promise<{ id: string }> }
               ).length;
               
               if (matchCount >= Math.ceil(originalWords.length * 0.7)) { // 70% word match
-                return `<mark class="bg-yellow-200 dark:bg-yellow-800/50 px-1 rounded cursor-pointer" data-note-id="${note.id}" title="${note.note}">${match}</mark>`;
+                return `<mark class="${color.bg} dark:${color.dark} px-1 rounded cursor-pointer ${color.hover} ${color.darkHover} transition-colors" data-note-id="${note.id}" onclick="document.getElementById('note-${note.id}')?.scrollIntoView({ behavior: 'smooth', block: 'center' })">${match}</mark>`;
               }
               return match;
             });
@@ -262,29 +285,42 @@ export default function ReadPage({ params }: { params: Promise<{ id: string }> }
                   Notes on this page
                 </h3>
                 <div className="space-y-3">
-                  {pageNotes.map((note) => (
-                    <div key={note.id} className="p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                      <div className="flex items-start gap-2 mb-2">
-                        <img
-                          src={note.expand?.user?.avatar || `https://api.dicebear.com/9.x/thumbs/svg?seed=${note.expand?.user?.name || 'Unknown'}`}
-                          alt={note.expand?.user?.name || 'Unknown User'}
-                          className="w-5 h-5 rounded-full object-cover"
-                        />
-                        <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                          {note.expand?.user?.name || 'Unknown User'}
-                        </span>
-                        <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                          {new Date(note.created).toLocaleDateString()}
-                        </span>
-                      </div>
-                      {note.bookText && (
-                        <div className="text-xs text-zinc-600 dark:text-zinc-400 bg-yellow-100 dark:bg-yellow-900/20 px-2 py-1 rounded mb-2 italic">
-                          "{note.bookText}"
+                  {pageNotes.map((note) => {
+                    const user = note.expand?.user;
+                    const userName = user?.name || 'Unknown User';
+                    const userAvatar = user?.avatar 
+                      ? pb.files.getURL(user, user.avatar) 
+                      : `https://api.dicebear.com/9.x/thumbs/svg?seed=${userName}`;
+                    const color = getUserColor(note.user);
+                    
+                    return (
+                      <div 
+                        key={note.id} 
+                        id={`note-${note.id}`}
+                        className="p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-800 scroll-mt-24"
+                      >
+                        <div className="flex items-start gap-2 mb-2">
+                          <img
+                            src={userAvatar}
+                            alt={userName}
+                            className="w-5 h-5 rounded-full object-cover"
+                          />
+                          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                            {userName}
+                          </span>
+                          <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                            {new Date(note.created).toLocaleDateString()}
+                          </span>
                         </div>
-                      )}
-                      <p className="text-sm text-zinc-700 dark:text-zinc-300">{note.note}</p>
-                    </div>
-                  ))}
+                        {note.bookText && (
+                          <div className={`text-xs text-zinc-600 dark:text-zinc-400 ${color.noteBg} dark:${color.noteDark} px-2 py-1 rounded mb-2 italic`}>
+                            "{note.bookText}"
+                          </div>
+                        )}
+                        <p className="text-sm text-zinc-700 dark:text-zinc-300">{note.note}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
