@@ -90,7 +90,7 @@ export async function getBookTotalPages(bookId: string): Promise<number> {
 export async function fetchBookNotes(bookId: string, page: number = 1, perPage: number = 10): Promise<NotesResponse | null> {
   try {
     const response = await pb.collection('notes').getList(page, perPage, {
-      filter: `book = "${bookId}"`,
+    filter: `book = "${bookId}" && processed = true`,
       sort: '+page,+created',
       expand: 'user,book'
     });

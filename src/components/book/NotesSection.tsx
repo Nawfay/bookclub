@@ -3,15 +3,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { MessageSquare, Loader2, Search, X } from "lucide-react";
 import { fetchBookNotes, searchNotes, NotesResponse } from "@/lib/read";
+import { Book } from "@/lib/data2";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NoteCard } from "./notes/NoteCard";
 import { NotesPagination } from "./notes/NotesPagination";
 
 interface NotesSectionProps {
   bookId: string;
+  book: Book;
 }
 
-export function NotesSection({ bookId }: NotesSectionProps) {
+export function NotesSection({ bookId, book }: NotesSectionProps) {
   const [notesData, setNotesData] = useState<NotesResponse | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -75,6 +77,8 @@ export function NotesSection({ bookId }: NotesSectionProps) {
     setSearchTerm("");
     setCurrentPage(1);
   };
+
+  if (book.status == "planned") return null
 
   if (loading) {
     return (

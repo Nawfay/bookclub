@@ -142,7 +142,7 @@ export default function BookPage({ params }: { params: Promise<{ id: string }> }
 
           <MemberProgress book={fetchedBook} />
 
-          <NotesSection bookId={id} />
+          <NotesSection bookId={id} book={fetchedBook} />
 
           <BookFooter bookId={fetchedBook.id} bookTitle={fetchedBook.title} />
 
