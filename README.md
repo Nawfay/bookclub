@@ -2,6 +2,11 @@
 
 A full-stack Next.js application for tracking book club reading progress, managing sessions, and sharing notes. This project uses PocketBase for the backend and OpenLibrary for fetching book data.
 
+<div align="center">
+  <video src="https://i.imgur.com/rUyxil8.mp4" width="100%" />
+  <img src="https://i.imgur.com/rUyxil8.gif" alt="Book Club App Demo" width="100%">
+</div>
+
 ## Features
 
 - **Library Management**: View books by status (Currently Reading, Up Next, Completed). Search and add books using the OpenLibrary API or upload custom entries with cover images.
@@ -18,6 +23,10 @@ A full-stack Next.js application for tracking book club reading progress, managi
 - **UI Components**: Radix UI, Lucide React, Sonner
 - **Backend**: PocketBase
 - **API**: OpenLibrary
+
+## Preview
+
+[![Watch the video](https://i.imgur.com/rUyxil8.gif)](https://i.imgur.com/rUyxil8.mp4)
 
 ## Getting Started
 
